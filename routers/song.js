@@ -4,7 +4,7 @@ import { CreateSong, createArtist, getAllArtis } from '../controllers/artist.js'
 import { createUser, handleLogin } from '../controllers/user.js';
 import { auth, authorize } from '../middleware/auth.js';
 import { createDevice, get10, getAllDevice, getDeviceBySearch, table1 } from '../controllers/Device.js';
-import { createData, get10Data, getAllData} from '../controllers/rtData.js';
+import { createData, get10Data, getAllData, table2} from '../controllers/rtData.js';
 import { addTest, getAllTest, sendMqtt } from '../controllers/TestMQTTApi.js';
 
 
@@ -53,7 +53,8 @@ router.post('/test/send', sendMqtt);
 
 
 //office
-router.get('/kien/iot', table1);
+router.get('/kien/iot1', table1);
+router.get('/kien/iot2', table2);
 
 
 export default router;
