@@ -36,7 +36,15 @@ export const saveMessage = async (topic, message) => {
     } catch (error) {
       console.error('Error saving message:', error);
     }
+
+    mqttClient.on('message', (topic, message) => {
+      console.log(`Received message on topic ${topic}: ${message.toString()}`);
+      saveMessage(topic, message.toString());  // Hàm saveMessage cần được định nghĩa
+  });
   };
+
+
+
 
   export const sendMqtt = async (req, res) => {
     console.log(req.body);

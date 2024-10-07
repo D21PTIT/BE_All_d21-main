@@ -1,3 +1,4 @@
+import { io } from "../index.js";
 import { Data } from "../model/rtData.js";
 
 export const createData = async (req, res) => {
@@ -77,3 +78,41 @@ export const table2 = async (req, res) => {
         return res.status(500).json({ message: 'Failed to get data', error: error.message });
     }
 };
+
+
+export const saveSensorData = async (topic, message) => {
+    const data = message.toString(); // Chuyển buffer thành chuỗi
+    console.log(`Received message on topic ${topic}: ${data}`);
+  
+    // Sử dụng Regular Expression để trích xuất dữ liệu cảm biến
+    const regex = /Temperature:\s([\d.]+)°C,\sHumidity:\s([\d.]+)%,\sBrightness:\s(\d+)/;
+    const match = data.match(regex);
+  
+    if (match) {
+      const temperature = parseFloat(match[1]);
+      const humidity = parseFloat(match[2]);
+      const light = parseInt(match[3]);
+  
+      console.log(`Extracted Data - Temperature: ${temperature}°C, Humidity: ${humidity}%, Brightness: ${light}`);
+    
+      // Lưu dữ liệu vào MongoDB
+      try {
+        const newSensorData = new Data({
+          humidity,
+          light,
+          temperature
+        });
+        await newSensorData.save();
+        console.log('Sensor data saved to MongoDB');
+        io.emit('sensorData', { 
+        temperature, 
+        humidity, 
+        light 
+      });
+      } catch (error) {
+        console.error('Error saving sensor data:', error);
+      }
+    } else {
+      console.error('Error parsing sensor data');
+    }
+  };
