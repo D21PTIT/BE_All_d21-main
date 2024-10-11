@@ -37,7 +37,6 @@ export const table2 = async (req, res) => {
         // Chuyển đổi page và quanty thành số nếu cần
         const limit = parseInt(quanty, 10);
         const skip = (parseInt(page, 10) - 1) * limit;
-
         // Tạo query lọc theo ngày tháng nếu daysort = true
         let query = {};
         if (daysort === 'true' && start && end) {
@@ -46,7 +45,6 @@ export const table2 = async (req, res) => {
                 $lte: new Date(end)
             };
         }
-
         // Sắp xếp theo thứ tự dựa trên timesort và một trong ba trường tempsort, humsort, brisort
         let sort = {};
         if (timesort && (timesort === '-1' || timesort === '1')) {
