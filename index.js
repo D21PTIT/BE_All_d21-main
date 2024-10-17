@@ -41,7 +41,6 @@ export const io = new Server(server, {
 // Socket.IO kết nối và lắng nghe sự kiện
 io.on('connection', (socket) => {
   console.log('New client connected');
-
   // Khi client ngắt kết nối
   socket.on('disconnect', () => {
     console.log('Client disconnected');

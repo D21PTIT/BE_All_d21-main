@@ -3,8 +3,8 @@ import { Data } from "../model/rtData.js";
 
 export const createData = async (req, res) => {
     try {
-        const { humidity,light,temperature   } = req.body;
-        const newData = new Data ({ humidity,light,temperature });
+        const { humidity, light, temperature } = req.body;
+        const newData = new Data({ humidity, light, temperature });
         await newData.save();
         return res.status(200).json({ message: 'Device created successfully', device: newData });
     } catch (error) {
@@ -30,9 +30,12 @@ export const get10Data = async (req, res) => {
     }
 };
 
+
+
+//Lay du lieu tu bang 2
 export const table2 = async (req, res) => {
     try {
-        const { page , quanty , daysort, start, end, timesort, tempsort, humsort, brisort } = req.query;
+        const { page, quanty, daysort, start, end, timesort, tempsort, humsort, brisort } = req.query;
 
         // Chuyển đổi page và quanty thành số nếu cần
         const limit = parseInt(quanty, 10);
@@ -78,39 +81,53 @@ export const table2 = async (req, res) => {
 };
 
 
+
+//Ham Quan trong
 export const saveSensorData = async (topic, message) => {
     const data = message.toString(); // Chuyển buffer thành chuỗi
     console.log(`Received message on topic ${topic}: ${data}`);
-  
+
     // Sử dụng Regular Expression để trích xuất dữ liệu cảm biến
     const regex = /Temperature:\s([\d.]+)°C,\sHumidity:\s([\d.]+)%,\sBrightness:\s(\d+)/;
     const match = data.match(regex);
-  
+
     if (match) {
-      const temperature = parseFloat(match[1]);
-      const humidity = parseFloat(match[2]);
-      const light = parseInt(match[3]);
-  
-      console.log(`Extracted Data - Temperature: ${temperature}°C, Humidity: ${humidity}%, Brightness: ${light}`);
-    
-      // Lưu dữ liệu vào MongoDB
-      try {
-        const newSensorData = new Data({
-          humidity,
-          light,
-          temperature
-        });
-        await newSensorData.save();
-        console.log('Sensor data saved to MongoDB');
-        io.emit('sensorData', { 
-        temperature, 
-        humidity, 
-        light 
-      });
-      } catch (error) {
-        console.error('Error saving sensor data:', error);
-      }
+        const temperature = parseFloat(match[1]);
+        const humidity = parseFloat(match[2]);
+        const light = parseInt(match[3]);
+
+        console.log(`Extracted Data - Temperature: ${temperature}°C, Humidity: ${humidity}%, Brightness: ${light}`);
+
+        // Lưu dữ liệu vào MongoDB
+        try {
+            const newSensorData = new Data({
+                humidity,
+                light,
+                temperature
+            });
+            await newSensorData.save();
+            console.log('Sensor data saved to MongoDB');
+            io.emit('sensorData', {
+                temperature,
+                humidity,
+                light
+            });
+        } catch (error) {
+            console.error('Error saving sensor data:', error);
+        }
     } else {
-      console.error('Error parsing sensor data');
+        console.error('Error parsing sensor data');
     }
-  };
+};
+
+//API xư lý bat tăt den
+export const saveLEDStatus = async (topic, message) => {
+    const data = message.toString(); // Chuyển buffer thành chuỗi
+    console.log(`Received message on topic ${topic}: ${data}`);
+
+    
+    
+
+    
+    
+};

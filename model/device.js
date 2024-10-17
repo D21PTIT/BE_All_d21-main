@@ -4,7 +4,6 @@ const connection = mongoose.createConnection('mongodb+srv://coinskus001:Dodaihoc
 const AutoIncrement = AutoIncrementFactory(connection);
 
 const deviceShema = new mongoose.Schema({
-  id: { type: Number },
   tag: {
     type: String,
     required: true,
@@ -21,7 +20,6 @@ const deviceShema = new mongoose.Schema({
     default: "off"
   },
 }, { timestamps: true , collection: 'Device'});//chèn các collection vào bảng user1
-deviceShema.plugin(AutoIncrement, { inc_field: 'id' });
 // createdAt, updatedAt sẽ được tự động thêm vào bởi tùy chọn timestamps
 
 export const Device = mongoose.model('Device', deviceShema);

@@ -57,6 +57,7 @@ export const getDeviceBySearch = async (req, res) => {
 };
 
 
+//API lay du lieu tu bang 1
 export const table1 = async (req, res) => {
     try {
         

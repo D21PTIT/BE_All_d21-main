@@ -1,5 +1,5 @@
 import mqtt from 'mqtt';
-import { saveSensorData } from '../controllers/rtData.js';
+import { saveLEDStatus, saveSensorData } from '../controllers/rtData.js';
 
 // Kết nối tới MQTT broker tại localhost với chứng thực username và password
 const mqttClient = mqtt.connect({
@@ -11,7 +11,6 @@ const mqttClient = mqtt.connect({
 
 mqttClient.on('connect', () => {
   console.log('Connected to MQTT broker');
-  
   // Đăng ký lắng nghe topic từ cảm biến
   mqttClient.subscribe('home/sensor', (err) => {
     if (!err) {
@@ -20,11 +19,30 @@ mqttClient.on('connect', () => {
       console.error('Error subscribing to topic:', err);
     }
   });
+  // Đăng ký lắng nghe từ các sự kiện bật tắt đèn
+  mqttClient.subscribe('home/led/status', (err) => {
+    if (!err) {
+      console.log('Subscribed to topic: home/led/status');
+    } else {
+      console.error('Error subscribing to topic:', err);
+    }
+  });
 });
 
 // Lắng nghe và xử lý tin nhắn từ MQTT
 mqttClient.on('message', (topic, message) => {
-  saveSensorData(topic, message); // Gọi hàm từ controller để xử lý dữ liệu
+  if (topic === 'home/sensor') {
+    saveSensorData(topic, message); 
+  }
 });
+
+mqttClient.on('message', (topic, message) => {
+  if (topic === 'home/led/status') {
+    saveLEDStatus(topic, message); 
+  }
+});
+
+
+
 
 export default mqttClient;
