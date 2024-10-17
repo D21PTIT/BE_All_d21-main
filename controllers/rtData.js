@@ -35,17 +35,77 @@ export const get10Data = async (req, res) => {
 //Lay du lieu tu bang 2
 export const table2 = async (req, res) => {
     try {
-        const { page, quanty, daysort, start, end, timesort, tempsort, humsort, brisort } = req.query;
+        const { page, quanty, daysort, start, end, timesort, tempsort, humsort, brisort, exactTime } = req.query;
 
         // Chuyển đổi page và quanty thành số nếu cần
         const limit = parseInt(quanty, 10);
         const skip = (parseInt(page, 10) - 1) * limit;
+        
         // Tạo query lọc theo ngày tháng nếu daysort = true
         let query = {};
         if (daysort === 'true' && start && end) {
             query.createdAt = {
                 $gte: new Date(start),
                 $lte: new Date(end)
+            };
+        }
+
+        // Nếu có exactTime, chuyển đổi nó sang dạng ISO và tìm kiếm chính xác
+        if (exactTime) {
+            const dateTimeParts = exactTime.split(' '); // Tách phần ngày và phần giờ (nếu có)
+            const dateParts = dateTimeParts[0].split('/'); // Tách chuỗi theo dấu '/'
+
+            let startDate, endDate;
+
+            if (dateParts.length === 1) {
+                // Trường hợp chỉ có năm (ví dụ: 2024)
+                const year = parseInt(dateParts[0], 10);
+                startDate = new Date(`${year}-01-01T00:00:00.000Z`);
+                endDate = new Date(`${year}-12-31T23:59:59.999Z`);
+            } else if (dateParts.length === 2) {
+                // Trường hợp có cả năm và tháng (ví dụ: 2024/12)
+                const year = parseInt(dateParts[0], 10);
+                const month = parseInt(dateParts[1], 10) - 1; // Tháng trong JS bắt đầu từ 0
+                startDate = new Date(year, month, 1, 0, 0, 0, 0);
+                endDate = new Date(year, month + 1, 0, 23, 59, 59, 999); // Lấy ngày cuối cùng của tháng
+            } else if (dateParts.length === 3) {
+                // Trường hợp có cả năm, tháng và ngày (ví dụ: 2024/12/09)
+                const year = parseInt(dateParts[0], 10);
+                const month = parseInt(dateParts[1], 10) - 1;
+                const day = parseInt(dateParts[2], 10);
+                startDate = new Date(year, month, day, 0, 0, 0, 0);
+                endDate = new Date(year, month, day, 23, 59, 59, 999);
+                
+                // Nếu có thêm phần thời gian (giờ phút giây)
+                if (dateTimeParts.length === 2) {
+                    const timeParts = dateTimeParts[1].split(':');
+
+                    if (timeParts.length === 1) {
+                        // Chỉ có giờ (ví dụ: 4)
+                        const hour = parseInt(timeParts[0], 10);
+                        startDate.setHours(hour, 0, 0, 0);
+                        endDate.setHours(hour, 59, 59, 999);
+                    } else if (timeParts.length === 2) {
+                        // Có cả giờ và phút (ví dụ: 4:23)
+                        const hour = parseInt(timeParts[0], 10);
+                        const minute = parseInt(timeParts[1], 10);
+                        startDate.setHours(hour, minute, 0, 0);
+                        endDate.setHours(hour, minute, 59, 999);
+                    } else if (timeParts.length === 3) {
+                        // Có cả giờ, phút và giây (ví dụ: 4:23:07)
+                        const hour = parseInt(timeParts[0], 10);
+                        const minute = parseInt(timeParts[1], 10);
+                        const second = parseInt(timeParts[2], 10);
+                        startDate.setHours(hour, minute, second, 0);
+                        endDate.setHours(hour, minute, second, 999);
+                    }
+                }
+            }
+
+            // Thêm vào query với khoảng thời gian xác định
+            query.createdAt = {
+                $gte: startDate,
+                $lte: endDate
             };
         }
         // Sắp xếp theo thứ tự dựa trên timesort và một trong ba trường tempsort, humsort, brisort
@@ -79,6 +139,7 @@ export const table2 = async (req, res) => {
         return res.status(500).json({ message: 'Failed to get data', error: error.message });
     }
 };
+
 
 
 
