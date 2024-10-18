@@ -38,14 +38,28 @@ export const io = new Server(server, {
   }
 });
 
+export const io1 = io.of('/1');
+export const io2 = io.of('/2');
+
+
 // Socket.IO kết nối và lắng nghe sự kiện
-io.on('connection', (socket) => {
+io2.on('connection', (socket) => {
   console.log('New client connected');
   // Khi client ngắt kết nối
   socket.on('disconnect', () => {
     console.log('Client disconnected');
   });
 });
+
+io1.on('connection', (socket) => {
+  console.log('New client connected ok ok');
+  // Khi client ngắt kết nối
+  socket.on('disconnect', () => {
+    console.log('Client disconnected');
+  });
+});
+
+
 
 // Sử dụng `server.listen` để khởi động cả HTTP server và Socket.IO server
 server.listen(PORT, () => {

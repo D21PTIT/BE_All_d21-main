@@ -1,4 +1,4 @@
-import { io } from "../index.js";
+import { io, io1, io2 } from "../index.js";
 import { Data } from "../model/rtData.js";
 
 export const createData = async (req, res) => {
@@ -40,7 +40,7 @@ export const table2 = async (req, res) => {
         // Chuyển đổi page và quanty thành số nếu cần
         const limit = parseInt(quanty, 10);
         const skip = (parseInt(page, 10) - 1) * limit;
-        
+
         // Tạo query lọc theo ngày tháng nếu daysort = true
         let query = {};
         if (daysort === 'true' && start && end) {
@@ -75,7 +75,7 @@ export const table2 = async (req, res) => {
                 const day = parseInt(dateParts[2], 10);
                 startDate = new Date(year, month, day, 0, 0, 0, 0);
                 endDate = new Date(year, month, day, 23, 59, 59, 999);
-                
+
                 // Nếu có thêm phần thời gian (giờ phút giây)
                 if (dateTimeParts.length === 2) {
                     const timeParts = dateTimeParts[1].split(':');
@@ -168,7 +168,7 @@ export const saveSensorData = async (topic, message) => {
             });
             await newSensorData.save();
             console.log('Sensor data saved to MongoDB');
-            io.emit('sensorData', {
+            io1.emit('sensorData', {
                 temperature,
                 humidity,
                 light
@@ -181,14 +181,28 @@ export const saveSensorData = async (topic, message) => {
     }
 };
 
-//API xư lý bat tăt den
+//API xư lý canh bao den
 export const saveLEDStatus = async (topic, message) => {
-    const data = message.toString(); // Chuyển buffer thành chuỗi
-    console.log(`Received message on topic ${topic}: ${data}`);
 
-    
-    
 
-    
-    
+};
+
+export const Warning = async (topic, message) => {
+    // Chuyển đổi message từ Buffer sang chuỗi và chuyển đổi sang số
+    const messageValue = parseInt(message.toString(), 10);
+    // Kiểm tra giá trị message
+    if (messageValue === 1) {
+        console.log(`Warning: Light level exceeded threshold for topic: ${topic}`);
+        io2.emit('warning', {
+            messageValue
+        });
+
+    } else if (messageValue === 0) {
+        console.log(`Info: Light level returned to normal for topic: ${topic}`);
+        io2.emit('warning', {
+            messageValue
+        });
+    } else {
+        console.log(`Unexpected message received: ${message}`);
+    }
 };
