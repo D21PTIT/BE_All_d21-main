@@ -187,6 +187,10 @@ export const saveLEDStatus = async (topic, message) => {
 
 };
 
+
+//API xư lý canh bao den
+
+
 export const Warning = async (topic, message) => {
     // Chuyển đổi message từ Buffer sang chuỗi và chuyển đổi sang số
     const messageValue = parseInt(message.toString(), 10);
