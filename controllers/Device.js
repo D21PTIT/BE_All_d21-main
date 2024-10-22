@@ -62,7 +62,6 @@ export const table1 = async (req, res) => {
     try {
         
         const { page, type, quanty, timesort } = req.query;
-
         // Chuyển đổi timesort từ chuỗi thành boolean
         const sortByCreatedAt = timesort === 'true' ? -1 : 1;
 

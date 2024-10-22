@@ -4,7 +4,7 @@ import { CreateSong, createArtist, getAllArtis } from '../controllers/artist.js'
 import { createUser, handleLogin } from '../controllers/user.js';
 import { auth, authorize } from '../middleware/auth.js';
 import { createDevice, get10, getAllDevice, getDeviceBySearch, table1 } from '../controllers/Device.js';
-import { createData, get10Data, getAllData, table2} from '../controllers/rtData.js';
+import { createData, get10Data, getAllData, table2, table3} from '../controllers/rtData.js';
 import { addTest, getAllTest, saveMessage, sendMqtt } from '../controllers/TestMQTTApi.js';
 
 
@@ -48,13 +48,18 @@ router.get('/iot/get10Data', get10Data);
 //test
 router.post('/test', addTest);
 router.get('/test/getall', getAllTest);
+
+
+
+
+//office  (HERE, HERE)
+router.get('/kien/iot1', table1);
+router.get('/kien/iot2', table2);
+router.get('/kien/iot3', table3);
 router.post('/test/send', sendMqtt);
 
 
-
-//office
-router.get('/kien/iot1', table1);
-router.get('/kien/iot2', table2);
+//(SEE UPPPP)
 
 router.post('/camon',saveMessage)
 

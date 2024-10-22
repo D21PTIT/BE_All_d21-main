@@ -1,5 +1,5 @@
 import mqtt from 'mqtt';
-import { saveLEDStatus, saveSensorData, Warning } from '../controllers/rtData.js';
+import { saveLEDStatus, saveSensorData, saveSensorData2, Warning } from '../controllers/rtData.js';
 
 // Kết nối tới MQTT broker tại localhost với chứng thực username và password
 const mqttClient = mqtt.connect({
@@ -27,9 +27,9 @@ mqttClient.on('connect', () => {
       console.error('Error subscribing to topic:', err);
     }
   });
-  mqttClient.subscribe('home/light/status', (err) => {
+  mqttClient.subscribe('home/wind/status', (err) => {
     if (!err) {
-      console.log('Subscribed to topic: home/light/status');
+      console.log('Subscribed to topic: home/wind/status');
     } else {
       console.error('Error subscribing to topic:', err);
     }
@@ -41,7 +41,8 @@ mqttClient.on('connect', () => {
 // Lắng nghe và xử lý tin nhắn từ MQTT
 mqttClient.on('message', (topic, message) => {
   if (topic === 'home/sensor') {
-    saveSensorData(topic, message); 
+    // saveSensorData(topic, message); 
+    saveSensorData2(topic, message); 
   }
 });
 
@@ -52,7 +53,7 @@ mqttClient.on('message', (topic, message) => {
 });
 
 mqttClient.on('message', (topic, message) => {
-  if (topic === 'home/light/status') {
+  if (topic === 'home/wind/status') {
     Warning(topic, message); 
   }
 });

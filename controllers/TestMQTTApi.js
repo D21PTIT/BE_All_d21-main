@@ -89,13 +89,14 @@ export const sendMqtt = async (req, res) => {
         });
       });
     });
-
     // Trả về phản hồi nếu thành công
     res.status(200).json({ message: `Message sent to topic ${topic} and response received`, response: mqttResponse });
   } catch (error) {
     res.status(500).json({ message: 'Failed to handle MQTT communication', error });
   }
 };
+
+
 
 
 
