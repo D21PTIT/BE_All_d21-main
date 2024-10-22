@@ -41,7 +41,7 @@ mqttClient.on('connect', () => {
 // Lắng nghe và xử lý tin nhắn từ MQTT
 mqttClient.on('message', (topic, message) => {
   if (topic === 'home/sensor') {
-    // saveSensorData(topic, message); 
+    saveSensorData(topic, message); 
     saveSensorData2(topic, message); 
   }
 });

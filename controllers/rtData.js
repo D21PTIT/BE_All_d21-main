@@ -1,7 +1,7 @@
 import { io, io1, io2 } from "../index.js";
+import { Device } from "../model/device.js";
 import { Data } from "../model/rtData.js";
 import { Test } from "../model/SupperTest.js";
-
 export const createData = async (req, res) => {
     try {
         const { humidity, light, temperature } = req.body;
@@ -12,15 +12,24 @@ export const createData = async (req, res) => {
         return res.status(500).json({ message: 'Failed to create device', error: error.message });
     }
 };
-
 export const getAllData = async (req, res) => {
     try {
-        const ans = await Data.find();
-        return res.status(200).json({ message: 'Get all data successfully', data: ans });
+        const ans = await Test.find(); // Lấy tất cả bản ghi
+        // Gán stt cho mỗi bản ghi và cập nhật lại csdl
+        await Promise.all(
+            ans.map(async (item, index) => {
+                item.stt = index + 1; // Cập nhật stt
+                await item.save();    // Lưu lại bản ghi với stt mới
+            })
+        );
+        // Lấy lại các bản ghi sau khi đã cập nhật stt
+        const updatedData = await Test.find();
+        return res.status(200).json({ message: 'Get all data and update stt successfully', data: updatedData });
     } catch (error) {
-        return res.status(500).json({ message: 'Failed to get all data', error: error.message });
+        return res.status(500).json({ message: 'Failed to get and update all data', error: error.message });
     }
 };
+
 
 export const get10Data = async (req, res) => {
     try {
@@ -30,8 +39,6 @@ export const get10Data = async (req, res) => {
         return res.status(500).json({ message: 'Failed to get data', error: error.message });
     }
 };
-
-
 
 //Lay du lieu tu bang 2
 export const table2 = async (req, res) => {
@@ -167,13 +174,14 @@ export const saveSensorData = async (topic, message) => {
         const light = parseInt(match[3]);
 
         console.log(`Extracted Data - Temperature: ${temperature}°C, Humidity: ${humidity}%, Brightness: ${light}`);
-
+        const count = await Data.countDocuments();
         // Lưu dữ liệu vào MongoDB
         try {
             const newSensorData = new Data({
                 humidity,
                 light,
-                temperature
+                temperature,
+                stt: count + 1
             });
             await newSensorData.save();
             console.log('Sensor data saved to MongoDB');
@@ -208,12 +216,18 @@ export const saveSensorData2 = async (topic, message) => {
         console.log(`Extracted Data - Temperature: ${temperature}°C, Humidity: ${humidity}%, Brightness: ${light}, WindSpeed: ${wind}km/h`);
 
         // Lưu dữ liệu vào MongoDB
+        const getNextStt = async () => {
+            const lastRecord = await Test.findOne().sort({ stt: -1 }); // Tìm bản ghi có stt lớn nhất
+            return lastRecord ? lastRecord.stt + 1 : 1; // Nếu có bản ghi, lấy stt lớn nhất +1, nếu không thì bắt đầu từ 1
+        };
+        const count = await getNextStt();
         try {
             const newSensorData = new Test({
                 temperature,
                 humidity,
                 light,
-                wind // Thêm wind vào đối tượng lưu trữ
+                wind, // Thêm wind vào đối tượng lưu trữ
+                stt: count
             });
             await newSensorData.save();
             console.log('Sensor data saved to MongoDB');
@@ -382,4 +396,3 @@ export const table3 = async (req, res) => {
         return res.status(500).json({ message: 'Failed to get data', error: error.message });
     }
 };
-

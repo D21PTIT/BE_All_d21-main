@@ -19,6 +19,10 @@ const deviceShema = new mongoose.Schema({
     required: true,
     default: "off"
   },
+  stt: {
+    type: Number,
+    required: true,
+  }
 }, { timestamps: true , collection: 'Device'});//chèn các collection vào bảng user1
 // createdAt, updatedAt sẽ được tự động thêm vào bởi tùy chọn timestamps
 

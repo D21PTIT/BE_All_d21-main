@@ -65,9 +65,9 @@ export const sendMqtt = async (req, res) => {
   
   let status = message.toString()[2];
   status = status == 0 ? "off" : "on";
-
+  const count = await Device.countDocuments();
   const tag = ans.toString();
-  const dev = new Device({ tag, name, status });
+  const dev = new Device({ tag, name, status,stt: count + 1 });
   await dev.save();
 
   try {
