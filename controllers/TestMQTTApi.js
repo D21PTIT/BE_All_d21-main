@@ -15,10 +15,12 @@ export const addTest = async (req, res) => {
 
 export const getAllTest = async (req, res) => {
   try {
-    const messages = await Message.find().sort({ timestamp: -1 });
+    const ans2 = await Device.countDocuments({
+      createdAt: { $regex: "2024-08-17" }
+    })
     res.json({
       status: 'success',
-      data: messages
+      data: ans2
     });
   } catch (err) {
     res.status(500).json({ status: 'error', message: err.message });
@@ -56,15 +58,18 @@ export const sendMqtt = async (req, res) => {
   const ans = message.toString()[0];
   let name = "";
   if (ans == 1) {
-    name = "fan";
+    name = "Quạt";
   } else if (ans == 2) {
-    name = "airc";
-  } else {
-    name = "lightb";
+    name = "Điều hòa";
+  }else if(ans ==3){
+    name = "Bóng đèn";
+  }
+  else {
+    name = "Cảnh báo gió";
   }
   
   let status = message.toString()[2];
-  status = status == 0 ? "off" : "on";
+  status = status == 0 ? "Tắt" : "Bật";
   const count = await Device.countDocuments();
   const tag = ans.toString();
   const dev = new Device({ tag, name, status,stt: count + 1 });
@@ -95,6 +100,8 @@ export const sendMqtt = async (req, res) => {
     res.status(500).json({ message: 'Failed to handle MQTT communication', error });
   }
 };
+
+
 
 
 

@@ -1,4 +1,4 @@
-import { io, io1, io2 } from "../index.js";
+import { io3, io1, io2 } from "../index.js";
 import { Device } from "../model/device.js";
 import { Data } from "../model/rtData.js";
 import { Test } from "../model/SupperTest.js";
@@ -237,6 +237,13 @@ export const saveSensorData2 = async (topic, message) => {
                 light,
                 wind // Phát dữ liệu bao gồm cả wind
             });
+            const count1 = await Test.countDocuments({wind:{$gt: 70}});
+            console.log(count1)
+            io3.emit('countWarning', {
+                count1
+            });
+
+
         } catch (error) {
             console.error('Error saving sensor data:', error);
         }
@@ -277,10 +284,9 @@ export const Warning = async (topic, message) => {
 };
 
 
-
 export const table3 = async (req, res) => {
     try {
-        const { page, quanty, timesort, tempsort, humsort, brisort, windsort, exactTime, type, exactValue } = req.query;
+        const { page, quanty, timesort, tag, order, exactTime, type, exactValue } = req.query;
 
         // Chuyển đổi page và quanty thành số nếu cần
         const limit = parseInt(quanty, 10);
@@ -291,91 +297,82 @@ export const table3 = async (req, res) => {
 
         // Nếu có exactTime, chuyển đổi nó sang dạng ISO và tìm kiếm chính xác
         if (exactTime) {
-            const dateTimeParts = exactTime.split(' '); // Tách phần ngày và phần giờ (nếu có)
-            const dateParts = dateTimeParts[0].split('/'); // Tách chuỗi theo dấu '/'
+            const dateTimeParts = exactTime.split(' ');
+            const dateParts = dateTimeParts[0].split('/');
 
             let startDate, endDate;
 
             if (dateParts.length === 1) {
-                // Trường hợp chỉ có năm (ví dụ: 2024)
+                // Chỉ có năm (ví dụ: 2024)
                 const year = parseInt(dateParts[0], 10);
                 startDate = new Date(`${year}-01-01T00:00:00.000Z`);
                 endDate = new Date(`${year}-12-31T23:59:59.999Z`);
             } else if (dateParts.length === 2) {
-                // Trường hợp có cả năm và tháng (ví dụ: 2024/12)
+                // Có cả năm và tháng (ví dụ: 2024/12)
                 const year = parseInt(dateParts[0], 10);
-                const month = parseInt(dateParts[1], 10) - 1; // Tháng trong JS bắt đầu từ 0
+                const month = parseInt(dateParts[1], 10) - 1;
                 startDate = new Date(year, month, 1, 0, 0, 0, 0);
-                endDate = new Date(year, month + 1, 0, 23, 59, 59, 999); // Lấy ngày cuối cùng của tháng
+                endDate = new Date(year, month + 1, 0, 23, 59, 59, 999);
             } else if (dateParts.length === 3) {
-                // Trường hợp có cả năm, tháng và ngày (ví dụ: 2024/12/09)
+                // Có cả năm, tháng và ngày (ví dụ: 2024/12/09)
                 const year = parseInt(dateParts[0], 10);
                 const month = parseInt(dateParts[1], 10) - 1;
                 const day = parseInt(dateParts[2], 10);
                 startDate = new Date(year, month, day, 0, 0, 0, 0);
                 endDate = new Date(year, month, day, 23, 59, 59, 999);
 
-                // Nếu có thêm phần thời gian (giờ phút giây)
+                // Thêm giờ nếu có
                 if (dateTimeParts.length === 2) {
                     const timeParts = dateTimeParts[1].split(':');
+                    const hour = parseInt(timeParts[0], 10);
+                    startDate.setHours(hour, 0, 0, 0);
+                    endDate.setHours(hour, 59, 59, 999);
 
-                    if (timeParts.length === 1) {
-                        // Chỉ có giờ (ví dụ: 4)
-                        const hour = parseInt(timeParts[0], 10);
-                        startDate.setHours(hour, 0, 0, 0);
-                        endDate.setHours(hour, 59, 59, 999);
-                    } else if (timeParts.length === 2) {
-                        // Có cả giờ và phút (ví dụ: 4:23)
-                        const hour = parseInt(timeParts[0], 10);
+                    // Thêm phút nếu có
+                    if (timeParts.length >= 2) {
                         const minute = parseInt(timeParts[1], 10);
-                        startDate.setHours(hour, minute, 0, 0);
-                        endDate.setHours(hour, minute, 59, 999);
-                    } else if (timeParts.length === 3) {
-                        // Có cả giờ, phút và giây (ví dụ: 4:23:07)
-                        const hour = parseInt(timeParts[0], 10);
-                        const minute = parseInt(timeParts[1], 10);
-                        const second = parseInt(timeParts[2], 10);
-                        startDate.setHours(hour, minute, second, 0);
-                        endDate.setHours(hour, minute, second, 999);
+                        startDate.setMinutes(minute, 0, 0);
+                        endDate.setMinutes(minute, 59, 999);
+
+                        // Thêm giây nếu có
+                        if (timeParts.length === 3) {
+                            const second = parseInt(timeParts[2], 10);
+                            startDate.setSeconds(second, 0);
+                            endDate.setSeconds(second, 999);
+                        }
                     }
                 }
             }
 
-            // Thêm vào query với khoảng thời gian xác định
-            query.createdAt = {
-                $gte: startDate,
-                $lte: endDate
-            };
+            // Thêm điều kiện lọc theo khoảng thời gian
+            query.createdAt = { $gte: startDate, $lte: endDate };
         }
 
         // Nếu có type và exactValue, tìm kiếm theo trường cụ thể
         if (type && exactValue) {
             const exact = parseFloat(exactValue);
 
-            if (type === 'Humidity') {
-                query.humidity = exact;
-            } else if (type === 'Light') {
-                query.light = exact;
-            } else if (type === 'Temperature') {
-                query.temperature = exact;
-            } else if (type === 'Wind') {
-                query.wind = exact; // Thêm logic tìm kiếm theo tốc độ gió
-            }
+            if (type === 'Humidity') query.humidity = exact;
+            else if (type === 'Light') query.light = exact;
+            else if (type === 'Temperature') query.temperature = exact;
+            else if (type === 'Wind') query.wind = exact;
         }
 
-        // Sắp xếp theo thứ tự dựa trên timesort và một trong các trường khác
+        // Thiết lập đối tượng sắp xếp
         let sort = {};
+
+        // Ưu tiên sắp xếp theo createdAt nếu timesort có giá trị
         if (timesort && (timesort === '-1' || timesort === '1')) {
-            sort.createdAt = parseInt(timesort); // Sắp xếp theo thời gian (createdAt)
+            sort.createdAt = parseInt(timesort);
         }
-        if (tempsort && tempsort !== '0') {
-            sort.temperature = parseInt(tempsort); // tempsort có giá trị -1 hoặc 1
-        } else if (humsort && humsort !== '0') {
-            sort.humidity = parseInt(humsort); // humsort có giá trị -1 hoặc 1
-        } else if (brisort && brisort !== '0') {
-            sort.light = parseInt(brisort); // brisort có giá trị -1 hoặc 1
-        } else if (windsort && windsort !== '0') {
-            sort.wind = parseInt(windsort); // Thêm logic sắp xếp theo tốc độ gió
+
+        // Sắp xếp theo tag và order nếu có, cùng với timesort
+        if (tag && order && (!timesort || timesort === '0')) {
+            const sortOrder = parseInt(order);
+            if (tag === '1') sort.humidity = sortOrder;
+            else if (tag === '2') sort.light = sortOrder;
+            else if (tag === '3') sort.temperature = sortOrder;
+            else if (tag === '4') sort.wind = sortOrder;
         }
 
         // Lấy tổng số bản ghi (count)
@@ -389,10 +386,19 @@ export const table3 = async (req, res) => {
 
         return res.status(200).json({
             message: `Get ${quanty} data successfully`,
-            totalRecords, // Tổng số bản ghi
+            totalRecords,
             data
         });
     } catch (error) {
         return res.status(500).json({ message: 'Failed to get data', error: error.message });
     }
 };
+
+
+
+
+
+
+
+
+

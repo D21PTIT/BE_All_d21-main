@@ -6,6 +6,7 @@ import song from './routers/song.js';
 import http from 'http';
 import dotenv from 'dotenv';
 import { Server } from 'socket.io';
+import mysql from 'mysql2';
 
 dotenv.config();
 const app = express();
@@ -29,6 +30,20 @@ mongoose
     console.log('Cannot connect to MongoDB', err);
   });
 
+//ecommerce
+  export const connection = mysql.createConnection({
+    host: 'localhost',
+    user: 'root',
+    password: '123456',
+    database: 'ecommerce'
+  });
+  connection.connect((err) => {
+    if (err) {
+      console.error('Kết nối thất bại:', err.stack);
+      return;
+    }
+    console.log('Đã kết nối với MySQL');
+  });
 // Tạo HTTP server và Socket.IO server
 const server = http.createServer(app);
 export const io = new Server(server, {
@@ -40,7 +55,7 @@ export const io = new Server(server, {
 
 export const io1 = io.of('/1');
 export const io2 = io.of('/2');
-
+export const io3 = io.of('/3');
 
 // Socket.IO kết nối và lắng nghe sự kiện
 io2.on('connection', (socket) => {
@@ -58,6 +73,15 @@ io1.on('connection', (socket) => {
     console.log('Client disconnected');
   });
 });
+io3.on('connection', (socket) => {
+  console.log('New client connected Haixxxx');
+  //Khi client ngắt kết nối
+  socket.on('disconnect', () => {
+    console.log('Client disconnected');
+  });
+});
+
+
 
 
 
