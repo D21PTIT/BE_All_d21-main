@@ -64,7 +64,7 @@ router.get('/kien/iot2', table2);
 router.get('/kien/iot3', table3);
 router.post('/test/send', sendMqtt);
 
-router.get('/get10value', get10value);
+router.get('/get20value', get10value);
 
 
 //(SEE UPPPP)

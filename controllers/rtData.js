@@ -199,7 +199,6 @@ export const saveSensorData = async (topic, message) => {
 };
 
 
-
 export const saveSensorData2 = async (topic, message) => {
     const data = message.toString(); // Chuyển buffer thành chuỗi
     console.log(`Received message on topic ${topic}: ${data}`);
@@ -237,7 +236,7 @@ export const saveSensorData2 = async (topic, message) => {
                 light,
                 wind // Phát dữ liệu bao gồm cả wind
             });
-            const count1 = await Test.countDocuments({wind:{$gt: 70}});
+            const count1 = await Test.countDocuments({wind:{$gt: 60}});
             console.log(count1)
             io3.emit('countWarning', {
                 count1

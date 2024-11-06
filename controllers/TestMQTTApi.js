@@ -73,7 +73,7 @@ export const sendMqtt = async (req, res) => {
   const count = await Device.countDocuments();
   const tag = ans.toString();
   const dev = new Device({ tag, name, status,stt: count + 1 });
-  await dev.save();
+  await dev.save();//thu cho xuong duoi 
 
   try {
     // Đợi phản hồi từ MQTT sau khi publish
