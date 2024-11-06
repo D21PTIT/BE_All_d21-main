@@ -255,8 +255,28 @@ export const saveSensorData2 = async (topic, message) => {
 
 //API xư lý canh bao den
 export const saveLEDStatus = async (topic, message) => {
+    const data = message.toString(); // Chuyển buffer thành chuỗi
+    const count = await Device.countDocuments();
+    // Kiểm tra dữ liệu và xác định trạng thái
+    let status = '';
+    if (data === '4 0') {
+        status = 'Tắt';
+    } else if (data === '4 1') {
+        status = 'Bật';
+    } else {
+        console.log('Không xác định được trạng thái từ dữ liệu.');
+        return; // Thoát nếu không đúng định dạng
+    }
+    const dev = new Device({ 
+        tag: '4', 
+        name: 'Cảnh báo gió', 
+        status: status,
+        stt: count + 1 
+    });
 
-
+    // Lưu đối tượng vào database
+    await dev.save();
+    
 };
 
 
@@ -393,6 +413,11 @@ export const table3 = async (req, res) => {
         return res.status(500).json({ message: 'Failed to get data', error: error.message });
     }
 };
+
+export const  get10value =  async (req, res)=>{
+    const data = await Test.find().limit(20).sort({createdAt: -1});
+    return res.status(200).json(data)
+}
 
 
 

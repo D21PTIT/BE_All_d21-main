@@ -88,6 +88,7 @@ export const sendMqtt = async (req, res) => {
           // Kiểm tra xem topic phản hồi có khớp không
           if (recvTopic === 'home/led/status') {  // Thay bằng topic thực tế bạn đang lắng nghe
             resolve(recvMessage.toString());
+            console.log(recvMessage);
           } else {
             reject({ message: 'Unexpected topic' });
           }
